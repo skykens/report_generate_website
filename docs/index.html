@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>量化回测数据中心</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f5f5f5;
+        }
+        
+        /* 顶部导航栏 */
+        .nav-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-bar.collapsed {
+            padding: 10px 20px;
+        }
+        
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-bar h1 {
+            font-size: 24px;
+        }
+        
+        .nav-toggle {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+        
+        .nav-toggle:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .nav-bar.collapsed .nav-tabs {
+            height: 0;
+            margin: 0;
+            opacity: 0;
+        }
+        
+        .nav-tab {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            user-select: none;
+        }
+        
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        /* 主体容器 */
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            height: calc(100vh - 100px);
+            transition: height 0.3s ease;
+        }
+        
+        .nav-bar.collapsed + .main-container {
+            height: calc(100vh - 50px);
+        }
+        
+        /* 左侧历史记录 */
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+            transition: margin-left 0.3s ease, width 0.3s ease;
+            position: relative;
+        }
+        
+        .sidebar.collapsed {
+            width: 50px;
+            padding: 20px 5px;
+            overflow: visible;
+        }
+        
+        .sidebar-toggle {
+            position: absolute;
+            right: 10px;
+            top: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .sidebar-toggle:hover {
+            background: #764ba2;
+            transform: scale(1.1);
+        }
+        
+        .sidebar.collapsed .sidebar-toggle {
+            right: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+        
+        .sidebar-content {
+            transition: opacity 0.3s ease;
+        }
+        
+        .sidebar.collapsed .sidebar-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        /* 策略组容器 */
+        .strategy-group {
+            margin-bottom: 20px;
+        }
+        
+        .strategy-group-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            padding: 8px 12px;
+            background: #f0f0f0;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .strategy-group-title:hover {
+            background: #e8e8e8;
+        }
+        
+        .strategy-group-title .arrow {
+            margin-right: 8px;
+            transition: transform 0.3s;
+        }
+        
+        .strategy-group.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+        
+        .strategy-group-content {
+            border: 1px solid #e0e0e0;
+            border-radius: 0 0 8px 8px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .strategy-group.collapsed .strategy-group-content {
+            max-height: 0;
+            border: none;
+        }
+        
+        .history-item {
+            padding: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-item.sub-strategy {
+            padding-left: 32px;
+            font-size: 14px;
+        }
+        
+        .history-item.sub-strategy::before {
+            content: "└";
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            color: #999;
+        }
+        
+        .history-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .history-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .history-item.main-strategy {
+            font-weight: bold;
+            background: #f8f9fa;
+        }
+        
+        .history-item.main-strategy.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .history-item .date {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .history-item .metrics {
+            font-size: 11px;
+            margin-top: 8px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .history-item .metric-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .history-item .metric-label {
+            opacity: 0.7;
+        }
+        
+        .history-item .metric-value {
+            font-weight: bold;
+        }
+        
+        .history-item .weight {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 6px;
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .history-item.active .weight {
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+        
+        /* 右侧内容区 */
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow: hidden;
+            background: white;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .content iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .csv-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .csv-table th, .csv-table td {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            text-align: left;
+        }
+        
+        .csv-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .csv-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        
+        /* 快捷键提示 */
+        .shortcuts-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .shortcuts-hint.show {
+            opacity: 1;
+        }
+        
+        /* 移动端菜单按钮 */
+        .menu-toggle-mobile {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            z-index: 2000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 24px;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .main-container {
+                height: calc(100vh - 80px);
+            }
+            
+            .nav-bar.collapsed + .main-container {
+                height: calc(100vh - 50px);
+            }
+            
+            .sidebar {
+                position: fixed;
+                left: -320px;
+                top: 0;
+                height: 100vh;
+                z-index: 1000;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                width: 320px;
+            }
+            
+            .sidebar.collapsed {
+                margin-left: 0;
+                width: 320px;
+                padding: 20px;
+            }
+            
+            .sidebar.open {
+                left: 0;
+            }
+            
+            .sidebar-toggle {
+                display: none;
+            }
+            
+            .menu-toggle-mobile {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .content {
+                margin: 10px;
+            }
+            
+            .nav-tabs {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 5px;
+            }
+            
+            .nav-tab {
+                flex-shrink: 0;
+            }
+            
+            .nav-header h1 {
+                font-size: 18px;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading::after {
+            content: '加载中...';
+            display: inline-block;
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% {
+                content: '加载中';
+            }
+            40% {
+                content: '加载中.';
+            }
+            60% {
+                content: '加载中..';
+            }
+            80%, 100% {
+                content: '加载中...';
+            }
+        }
+        
+        /* 遮罩层（移动端） */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav-bar" id="nav-bar">
+        <div class="nav-header">
+            <h1>量化回测数据中心</h1>
+            <button class="nav-toggle" onclick="toggleNav()" title="收起/展开导航">▼</button>
+        </div>
+        <div class="nav-tabs">
+            <div class="nav-tab active" data-category="fund_curve">资金曲线</div>
+            <div class="nav-tab" data-category="strategy_eval">策略评价</div>
+            <div class="nav-tab" data-category="yearly_return">年度收益</div>
+            <div class="nav-tab" data-category="monthly_return">月度收益</div>
+            <div class="nav-tab" data-category="quarterly_return">季度收益</div>
+            <div class="nav-tab" data-category="config">策略配置</div>
+            <div class="nav-tab" data-category="download">下载完整回测数据</div>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <button class="sidebar-toggle" onclick="toggleSidebar()" title="收起/展开侧边栏">◀</button>
+            <div class="sidebar-content">
+                <h2>历史记录</h2>
+                <div id="history-list">
+                    <div class="loading"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content" id="content">
+            <div class="empty-state">
+                <h3>请选择历史记录</h3>
+                <p>从左侧列表选择要查看的回测记录</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay" onclick="toggleMobileSidebar()"></div>
+    <button class="menu-toggle-mobile" id="menu-toggle-mobile" onclick="toggleMobileSidebar()">☰</button>
+    
+    <div class="shortcuts-hint" id="shortcuts-hint">
+        快捷键: [N] 导航栏 | [S] 侧边栏 | [↑↓] 切换记录
+    </div>
+    
+    <script>
+        // GitHub 仓库配置
+        const GITHUB_CONFIG = {
+            owner: 'YOUR_GITHUB_USERNAME',  // 替换为你的 GitHub 用户名
+            repo: 'YOUR_REPO_NAME',          // 替换为你的仓库名
+            baseUrl: 'https://github.com'   // GitHub 基础URL
+        };
+        
+        let historyData = null;
+        let currentRecord = null;
+        let currentCategory = 'fund_curve';
+        let allRecords = [];
+        
+        // 初始化
+        async function init() {
+            try {
+                // 加载历史记录
+                const response = await fetch('history.json');
+                if (!response.ok) throw new Error('无法加载历史记录');
+                
+                historyData = await response.json();
+                renderHistory();
+                
+                // 默认加载第一个策略
+                if (allRecords.length > 0) {
+                    loadRecord(allRecords[0].id);
+                }
+                
+                // 初始化快捷键
+                initKeyboardShortcuts();
+                
+                // 恢复用户偏好设置
+                restoreUserPreferences();
+                
+            } catch (error) {
+                console.error('初始化失败:', error);
+                document.getElementById('history-list').innerHTML = 
+                    '<div style="color: red; padding: 10px;">加载失败: ' + error.message + '</div>';
+            }
+        }
+        
+        // 切换导航栏
+        function toggleNav() {
+            const navBar = document.getElementById('nav-bar');
+            const isCollapsed = navBar.classList.toggle('collapsed');
+            const toggle = navBar.querySelector('.nav-toggle');
+            toggle.textContent = isCollapsed ? '▶' : '▼';
+            
+            // 保存用户偏好
+            localStorage.setItem('navCollapsed', isCollapsed);
+        }
+        
+        // 切换侧边栏
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            const toggle = sidebar.querySelector('.sidebar-toggle');
+            toggle.textContent = isCollapsed ? '▶' : '◀';
+            
+            // 保存用户偏好
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+        
+        // 移动端切换侧边栏
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+        
+        // 恢复用户偏好设置
+        function restoreUserPreferences() {
+            // 恢复导航栏状态
+            if (localStorage.getItem('navCollapsed') === 'true') {
+                const navBar = document.getElementById('nav-bar');
+                navBar.classList.add('collapsed');
+                navBar.querySelector('.nav-toggle').textContent = '▶';
+            }
+            
+            // 恢复侧边栏状态（仅桌面端）
+            if (window.innerWidth > 768 && localStorage.getItem('sidebarCollapsed') === 'true') {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.add('collapsed');
+                sidebar.querySelector('.sidebar-toggle').textContent = '▶';
+            }
+        }
+        
+        // 初始化键盘快捷键
+        function initKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // 忽略输入框中的按键
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                switch(e.key.toLowerCase()) {
+                    case 'n':
+                        toggleNav();
+                        showShortcutHint();
+                        break;
+                    case 's':
+                        if (window.innerWidth > 768) {
+                            toggleSidebar();
+                            showShortcutHint();
+                        }
+                        break;
+                    case 'arrowup':
+                        e.preventDefault();
+                        const currentIndex = allRecords.findIndex(r => r.id === currentRecord?.id);
+                        if (currentIndex > 0) {
+                            loadRecord(allRecords[currentIndex - 1].id);
+                        }
+                        break;
+                    case 'arrowdown':
+                        e.preventDefault();
+                        const idx = allRecords.findIndex(r => r.id === currentRecord?.id);
+                        if (idx < allRecords.length - 1) {
+                            loadRecord(allRecords[idx + 1].id);
+                        }
+                        break;
+                    case '?':
+                        showShortcutHint();
+                        break;
+                }
+            });
+        }
+        
+        // 显示快捷键提示
+        function showShortcutHint() {
+            const hint = document.getElementById('shortcuts-hint');
+            hint.classList.add('show');
+            setTimeout(() => {
+                hint.classList.remove('show');
+            }, 2000);
+        }
+        
+        // 渲染历史记录列表
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            
+            if (!historyData.strategies || historyData.strategies.length === 0) {
+                container.innerHTML = '<div style="padding: 10px; color: #999;">暂无历史记录</div>';
+                return;
+            }
+            
+            allRecords = [];
+            let html = '';
+            
+            historyData.strategies.forEach(strategy => {
+                // 添加策略组
+                html += `
+                    <div class="strategy-group" id="group-${strategy.id}">
+                        <div class="strategy-group-title" onclick="toggleGroup('${strategy.id}')">
+                            <span class="arrow">▼</span>
+                            <span>📊 ${strategy.name}</span>
+                        </div>
+                        <div class="strategy-group-content" style="max-height: 1000px;">
+                `;
+                
+                // 添加主策略
+                allRecords.push(strategy);
+                const mainMetrics = strategy.metrics || {};
+                html += `
+                    <div class="history-item main-strategy ${allRecords.length === 1 ? 'active' : ''}" 
+                         onclick="loadRecord('${strategy.id}')"
+                         data-id="${strategy.id}">
+                        <div>总策略: ${strategy.name}</div>
+                        <div class="date">${formatTimestamp(strategy.timestamp)}</div>
+                        <div style="font-size: 11px; color: #888; margin: 5px 0;">
+                            📁 数据版本: ${strategy.timestamp}
+                        </div>
+                        <div class="metrics">
+                            ${mainMetrics.total_return ? `
+                                <div class="metric-item">
+                                    <span class="metric-label">收益</span>
+                                    <span class="metric-value">${mainMetrics.total_return > 0 ? '+' : ''}${mainMetrics.total_return.toFixed(2)}%</span>
+                                </div>
+                            ` : ''}
+                            ${mainMetrics.max_drawdown ? `
+                                <div class="metric-item">
+                                    <span class="metric-label">回撤</span>
+                                    <span class="metric-value">${mainMetrics.max_drawdown.toFixed(2)}%</span>
+                                </div>
+                            ` : ''}
+                            ${mainMetrics.sharpe_ratio ? `
+                                <div class="metric-item">
+                                    <span class="metric-label">夏普</span>
+                                    <span class="metric-value">${mainMetrics.sharpe_ratio.toFixed(2)}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                // 添加子策略
+                if (strategy.sub_strategies) {
+                    strategy.sub_strategies.forEach(subStrategy => {
+                        allRecords.push(subStrategy);
+                        const subMetrics = subStrategy.metrics || {};
+                        html += `
+                            <div class="history-item sub-strategy" 
+                                 onclick="loadRecord('${subStrategy.id}')"
+                                 data-id="${subStrategy.id}">
+                                <div>
+                                    ${subStrategy.name}
+                                    ${subMetrics.weight ? `<span class="weight">${(subMetrics.weight * 100).toFixed(1)}%</span>` : ''}
+                                </div>
+                                <div class="metrics">
+                                    ${subMetrics.total_return ? `
+                                        <div class="metric-item">
+                                            <span class="metric-label">收益</span>
+                                            <span class="metric-value">${subMetrics.total_return > 0 ? '+' : ''}${subMetrics.total_return.toFixed(2)}%</span>
+                                        </div>
+                                    ` : ''}
+                                    ${subMetrics.max_drawdown ? `
+                                        <div class="metric-item">
+                                            <span class="metric-label">回撤</span>
+                                            <span class="metric-value">${subMetrics.max_drawdown.toFixed(2)}%</span>
+                                        </div>
+                                    ` : ''}
+                                    ${subMetrics.sharpe_ratio ? `
+                                        <div class="metric-item">
+                                            <span class="metric-label">夏普</span>
+                                            <span class="metric-value">${subMetrics.sharpe_ratio.toFixed(2)}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // 切换策略组展开/收起
+        function toggleGroup(groupId) {
+            const group = document.getElementById(`group-${groupId}`);
+            if (group) {
+                const content = group.querySelector('.strategy-group-content');
+                const isCollapsed = group.classList.toggle('collapsed');
+                if (isCollapsed) {
+                    content.style.maxHeight = '0';
+                } else {
+                    content.style.maxHeight = '1000px';
+                }
+            }
+        }
+        
+        // 格式化时间戳
+        function formatTimestamp(timestamp) {
+            // timestamp格式: 20241204_153000
+            const year = timestamp.substring(0, 4);
+            const month = timestamp.substring(4, 6);
+            const day = timestamp.substring(6, 8);
+            const hour = timestamp.substring(9, 11);
+            const minute = timestamp.substring(11, 13);
+            
+            return `${year}-${month}-${day} ${hour}:${minute}`;
+        }
+        
+        // 加载记录
+        function loadRecord(recordId) {
+            // 查找记录
+            currentRecord = allRecords.find(r => r.id === recordId);
+            if (!currentRecord) return;
+            
+            // 更新选中状态
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.id === recordId);
+            });
+            
+            // 如果侧边栏是收起的，自动展开（可选）
+            // const sidebar = document.getElementById('sidebar');
+            // if (sidebar.classList.contains('collapsed')) {
+            //     toggleSidebar();
+            // }
+            
+            // 显示当前分类的内容
+            showCategory(currentCategory);
+            
+            // 移动端自动关闭侧边栏
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('overlay');
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            }
+        }
+        
+        // 显示分类内容
+        async function showCategory(category) {
+            currentCategory = category;
+            
+            // 更新标签状态
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.category === category);
+            });
+            
+            if (!currentRecord) {
+                return;
+            }
+            
+            const contentDiv = document.getElementById('content');
+            const files = currentRecord.files;
+            
+            // 显示加载中
+            contentDiv.innerHTML = '<div class="loading"></div>';
+            
+            try {
+                // 查找对应分类的文件
+                if (category === 'config') {
+                    // 显示配置文件列表
+                    const configFiles = files.config_files || [];
+                    if (configFiles.length > 0) {
+                        contentDiv.innerHTML = `
+                            <h2>配置文件</h2>
+                            <ul style="list-style: none; padding: 20px;">
+                                ${configFiles.map(f => 
+                                    `<li style="margin: 10px 0;">
+                                        <a href="${currentRecord.data_path}/${f.path}" 
+                                           target="_blank" 
+                                           style="color: #667eea; text-decoration: none; font-size: 16px;">
+                                           📄 ${f.name}
+                                        </a>
+                                    </li>`
+                                ).join('')}
+                            </ul>
+                        `;
+                    } else {
+                        contentDiv.innerHTML = '<div class="empty-state"><p>无配置文件</p></div>';
+                    }
+                    return;
+                }
+                
+                // 下载完整回测数据
+                if (category === 'download') {
+                    // 查找对应的主策略
+                    let mainStrategy = currentRecord;
+                    if (currentRecord.type === 'sub') {
+                        // 如果当前是子策略，找到其父策略
+                        mainStrategy = historyData.strategies.find(s => s.id === currentRecord.parent_id);
+                    }
+                    
+                    if (mainStrategy && mainStrategy.archive) {
+                        const archive = mainStrategy.archive;
+                        // 构建 GitHub Release 下载链接
+                        const downloadUrl = `${GITHUB_CONFIG.baseUrl}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/releases/download/latest/${archive.filename}`;
+                        const sizeInMB = (archive.size / 1024 / 1024).toFixed(2);
+                        
+                        contentDiv.innerHTML = `
+                            <div style="padding: 40px; text-align: center;">
+                                <h2>下载完整回测数据</h2>
+                                <div style="margin: 30px 0; padding: 30px; background: #f8f9fa; border-radius: 10px;">
+                                    <div style="font-size: 48px; margin-bottom: 20px;">📦</div>
+                                    <h3 style="color: #333; margin-bottom: 10px;">${archive.filename}</h3>
+                                    <p style="color: #666; margin-bottom: 20px;">文件大小: ${sizeInMB} MB</p>
+                                    <p style="color: #666; margin-bottom: 30px;">
+                                        包含策略: ${mainStrategy.name}<br>
+                                        数据版本: ${mainStrategy.timestamp}
+                                    </p>
+                                    <a href="${downloadUrl}" 
+                                       target="_blank"
+                                       style="display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                              color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;
+                                              transition: transform 0.3s, box-shadow 0.3s;"
+                                       onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 15px rgba(0,0,0,0.2)';"
+                                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='none';">
+                                        下载压缩包
+                                    </a>
+                                </div>
+                                <div style="margin-top: 30px; padding: 20px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px;">
+                                    <p style="color: #856404; text-align: left;">
+                                        <strong>⚠️ 配置提示：</strong><br>
+                                        如果下载链接无效，请修改 index.html 中的 GITHUB_CONFIG：<br>
+                                        <code style="background: #f8f9fa; padding: 2px 5px; border-radius: 3px;">
+                                        owner: '你的GitHub用户名', repo: '你的仓库名'
+                                        </code>
+                                    </p>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        contentDiv.innerHTML = `
+                            <div class="empty-state">
+                                <h3>无可下载数据</h3>
+                                <p>当前策略没有归档文件</p>
+                            </div>
+                        `;
+                    }
+                    return;
+                }
+                
+                // 查找HTML文件（资金曲线）
+                if (category === 'fund_curve') {
+                    const htmlFiles = files.html_files || [];
+                    const htmlFile = htmlFiles.find(f => f.category === 'fund_curve');
+                    
+                    if (htmlFile) {
+                        // 直接嵌入HTML文件，不做任何修改
+                        const fullPath = `${currentRecord.data_path}/${htmlFile.path}`;
+                        console.log('Loading HTML:', fullPath);
+                        contentDiv.innerHTML = `<iframe src="${fullPath}"></iframe>`;
+                        return;
+                    }
+                }
+                
+                // 查找CSV文件
+                const csvFiles = files.csv_files || [];
+                let csvFile = null;
+                
+                // 根据category查找对应的CSV文件
+                if (category === 'strategy_eval') {
+                    csvFile = csvFiles.find(f => f.name === '策略评价.csv' || f.name.includes('策略评价'));
+                } else if (category === 'yearly_return') {
+                    csvFile = csvFiles.find(f => f.name === '年度账户收益.csv' || f.name.includes('年度'));
+                } else if (category === 'monthly_return') {
+                    csvFile = csvFiles.find(f => f.name === '月度账户收益.csv' || f.name.includes('月度'));
+                } else if (category === 'quarterly_return') {
+                    csvFile = csvFiles.find(f => f.name === '季度账户收益.csv' || f.name.includes('季度'));
+                }
+                
+                if (csvFile) {
+                    // 检查是否是大文件（如资金曲线.csv）
+                    if (csvFile.name === '资金曲线.csv') {
+                        contentDiv.innerHTML = `
+                            <div class="empty-state">
+                                <h3>文件过大</h3>
+                                <p>${csvFile.name} 文件过大，请查看资金曲线HTML图表</p>
+                            </div>
+                        `;
+                    } else {
+                        // 加载并显示CSV表格
+                        try {
+                            const html = await loadCSV(`${currentRecord.data_path}/${csvFile.path}`);
+                            contentDiv.innerHTML = `
+                                <h2>${csvFile.name}</h2>
+                                <div style="overflow: auto; height: 100%;">
+                                    ${html}
+                                </div>
+                            `;
+                        } catch (error) {
+                            contentDiv.innerHTML = `
+                                <div class="empty-state">
+                                    <p>加载CSV失败: ${error.message}</p>
+                                </div>
+                            `;
+                        }
+                    }
+                } else {
+                    contentDiv.innerHTML = `
+                        <div class="empty-state">
+                            <p>该分类暂无数据</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                contentDiv.innerHTML = `
+                    <div class="empty-state">
+                        <p>加载失败: ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 加载CSV并转换为表格
+        async function loadCSV(path) {
+            const response = await fetch(path);
+            if (!response.ok) {
+                throw new Error('无法加载CSV文件');
+            }
+            
+            const text = await response.text();
+            const lines = text.trim().split('\n').filter(line => line.trim());
+            
+            if (lines.length === 0) {
+                return '<div class="empty-state"><p>CSV文件为空</p></div>';
+            }
+            
+            // 解析CSV（处理逗号在引号内的情况）
+            const parseCSVLine = (line) => {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                result.push(current.trim());
+                return result;
+            };
+            
+            const headers = parseCSVLine(lines[0]);
+            const rows = lines.slice(1).map(line => parseCSVLine(line));
+            
+            // 生成表格HTML
+            let html = '<table class="csv-table"><thead><tr>';
+            html += headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
+            html += '</tr></thead><tbody>';
+            
+            html += rows.map(row => 
+                '<tr>' + row.map(cell => `<td>${escapeHtml(cell)}</td>`).join('') + '</tr>'
+            ).join('');
+            
+            html += '</tbody></table>';
+            
+            return html;
+        }
+        
+        // HTML转义
+        function escapeHtml(unsafe) {
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // 绑定导航点击事件
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                showCategory(tab.dataset.category);
+            });
+        });
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
