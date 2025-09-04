@@ -543,9 +543,9 @@
     <script>
         // GitHub 仓库配置
         const GITHUB_CONFIG = {
-            owner: 'YOUR_GITHUB_USERNAME',  // 替换为你的 GitHub 用户名
-            repo: 'YOUR_REPO_NAME',          // 替换为你的仓库名
-            baseUrl: 'https://github.com'   // GitHub 基础URL
+            owner: 'skykens',                    // GitHub 用户名
+            repo: 'report_generate_website',     // 仓库名
+            baseUrl: 'https://github.com'        // GitHub 基础URL
         };
         
         let historyData = null;
@@ -892,8 +892,9 @@
                     
                     if (mainStrategy && mainStrategy.archive) {
                         const archive = mainStrategy.archive;
-                        // 构建 GitHub Release 下载链接
-                        const downloadUrl = `${GITHUB_CONFIG.baseUrl}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/releases/download/latest/${archive.filename}`;
+                        // 构建 GitHub Release 下载链接 (使用时间戳作为tag)
+                        const releaseTag = mainStrategy.timestamp ? `v${mainStrategy.timestamp}` : mainStrategy.timestamp;
+                        const downloadUrl = `${GITHUB_CONFIG.baseUrl}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/releases/download/${releaseTag}/${archive.filename}`;
                         const sizeInMB = (archive.size / 1024 / 1024).toFixed(2);
                         
                         contentDiv.innerHTML = `
