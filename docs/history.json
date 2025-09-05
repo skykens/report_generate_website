@@ -1,4 +1,340 @@
 {
-  "strategies": [],
-  "last_updated": "2025-09-05T23:51:22.788646Z"
+  "strategies": [
+    {
+      "id": "main_strategy_20250905_235957",
+      "name": "超混合策略精心随机v1 (仓位管理)",
+      "type": "main",
+      "timestamp": "20250905_235957",
+      "data_path": "backtests/20250905_235957/仓位管理回测结果/config_超混合策略精心随机v1_2000u版_正常_210101_250903",
+      "metrics": {
+        "total_return": 123.5,
+        "max_drawdown": -15.57,
+        "sharpe_ratio": 7.93
+      },
+      "files": {
+        "html_files": [
+          {
+            "name": "资金曲线.html",
+            "path": "资金曲线.html",
+            "category": "fund_curve"
+          }
+        ],
+        "csv_files": [
+          {
+            "name": "策略评价.csv",
+            "path": "策略评价.csv"
+          },
+          {
+            "name": "季度账户收益.csv",
+            "path": "季度账户收益.csv"
+          },
+          {
+            "name": "年度账户收益.csv",
+            "path": "年度账户收益.csv"
+          },
+          {
+            "name": "月度账户收益.csv",
+            "path": "月度账户收益.csv"
+          }
+        ],
+        "config_files": []
+      },
+      "sub_strategies": [
+        {
+          "id": "s1",
+          "name": "S1-普通多空",
+          "type": "sub",
+          "parent_id": "main_strategy_20250905_235957",
+          "timestamp": "20250905_235957",
+          "data_path": "backtests/20250905_235957/子策略回测结果/config_超混合策略精心随机v1_2000u版_正常_210101_250903/S1-普通多空",
+          "metrics": {
+            "total_return": 119.95,
+            "max_drawdown": -23.16,
+            "sharpe_ratio": 5.18,
+            "weight": 0.125
+          },
+          "files": {
+            "html_files": [
+              {
+                "name": "资金曲线_轻量版.html",
+                "path": "资金曲线_轻量版.html",
+                "category": "fund_curve"
+              }
+            ],
+            "csv_files": [
+              {
+                "name": "策略评价.csv",
+                "path": "策略评价.csv"
+              },
+              {
+                "name": "季度账户收益.csv",
+                "path": "季度账户收益.csv"
+              },
+              {
+                "name": "年度账户收益.csv",
+                "path": "年度账户收益.csv"
+              },
+              {
+                "name": "月度账户收益.csv",
+                "path": "月度账户收益.csv"
+              }
+            ],
+            "config_files": [
+              {
+                "name": "config.csv",
+                "path": "config.csv",
+                "type": "strategy_config"
+              }
+            ]
+          }
+        },
+        {
+          "id": "s3",
+          "name": "S3-浪3多空",
+          "type": "sub",
+          "parent_id": "main_strategy_20250905_235957",
+          "timestamp": "20250905_235957",
+          "data_path": "backtests/20250905_235957/子策略回测结果/config_超混合策略精心随机v1_2000u版_正常_210101_250903/S3-浪3多空",
+          "metrics": {
+            "total_return": 81.91,
+            "max_drawdown": -13.79,
+            "sharpe_ratio": 5.94,
+            "weight": 0.175
+          },
+          "files": {
+            "html_files": [
+              {
+                "name": "资金曲线_轻量版.html",
+                "path": "资金曲线_轻量版.html",
+                "category": "fund_curve"
+              }
+            ],
+            "csv_files": [
+              {
+                "name": "策略评价.csv",
+                "path": "策略评价.csv"
+              },
+              {
+                "name": "季度账户收益.csv",
+                "path": "季度账户收益.csv"
+              },
+              {
+                "name": "年度账户收益.csv",
+                "path": "年度账户收益.csv"
+              },
+              {
+                "name": "月度账户收益.csv",
+                "path": "月度账户收益.csv"
+              }
+            ],
+            "config_files": [
+              {
+                "name": "config.csv",
+                "path": "config.csv",
+                "type": "strategy_config"
+              }
+            ]
+          }
+        },
+        {
+          "id": "s5",
+          "name": "S5-浪3多空-仅空头过滤",
+          "type": "sub",
+          "parent_id": "main_strategy_20250905_235957",
+          "timestamp": "20250905_235957",
+          "data_path": "backtests/20250905_235957/子策略回测结果/config_超混合策略精心随机v1_2000u版_正常_210101_250903/S5-浪3多空-仅空头过滤",
+          "metrics": {
+            "total_return": 128.76,
+            "max_drawdown": -35.42,
+            "sharpe_ratio": 3.64,
+            "weight": 0.175
+          },
+          "files": {
+            "html_files": [
+              {
+                "name": "资金曲线_轻量版.html",
+                "path": "资金曲线_轻量版.html",
+                "category": "fund_curve"
+              }
+            ],
+            "csv_files": [
+              {
+                "name": "策略评价.csv",
+                "path": "策略评价.csv"
+              },
+              {
+                "name": "季度账户收益.csv",
+                "path": "季度账户收益.csv"
+              },
+              {
+                "name": "年度账户收益.csv",
+                "path": "年度账户收益.csv"
+              },
+              {
+                "name": "月度账户收益.csv",
+                "path": "月度账户收益.csv"
+              }
+            ],
+            "config_files": [
+              {
+                "name": "config.csv",
+                "path": "config.csv",
+                "type": "strategy_config"
+              }
+            ]
+          }
+        },
+        {
+          "id": "s2",
+          "name": "S2-浪2多空",
+          "type": "sub",
+          "parent_id": "main_strategy_20250905_235957",
+          "timestamp": "20250905_235957",
+          "data_path": "backtests/20250905_235957/子策略回测结果/config_超混合策略精心随机v1_2000u版_正常_210101_250903/S2-浪2多空",
+          "metrics": {
+            "total_return": 118.75,
+            "max_drawdown": -17.94,
+            "sharpe_ratio": 6.62,
+            "weight": 0.125
+          },
+          "files": {
+            "html_files": [
+              {
+                "name": "资金曲线_轻量版.html",
+                "path": "资金曲线_轻量版.html",
+                "category": "fund_curve"
+              }
+            ],
+            "csv_files": [
+              {
+                "name": "策略评价.csv",
+                "path": "策略评价.csv"
+              },
+              {
+                "name": "季度账户收益.csv",
+                "path": "季度账户收益.csv"
+              },
+              {
+                "name": "年度账户收益.csv",
+                "path": "年度账户收益.csv"
+              },
+              {
+                "name": "月度账户收益.csv",
+                "path": "月度账户收益.csv"
+              }
+            ],
+            "config_files": [
+              {
+                "name": "config.csv",
+                "path": "config.csv",
+                "type": "strategy_config"
+              }
+            ]
+          }
+        },
+        {
+          "id": "s4",
+          "name": "S4-浪2多空-仅空头过滤",
+          "type": "sub",
+          "parent_id": "main_strategy_20250905_235957",
+          "timestamp": "20250905_235957",
+          "data_path": "backtests/20250905_235957/子策略回测结果/config_超混合策略精心随机v1_2000u版_正常_210101_250903/S4-浪2多空-仅空头过滤",
+          "metrics": {
+            "total_return": 148.86,
+            "max_drawdown": -34.19,
+            "sharpe_ratio": 4.35,
+            "weight": 0.175
+          },
+          "files": {
+            "html_files": [
+              {
+                "name": "资金曲线_轻量版.html",
+                "path": "资金曲线_轻量版.html",
+                "category": "fund_curve"
+              }
+            ],
+            "csv_files": [
+              {
+                "name": "策略评价.csv",
+                "path": "策略评价.csv"
+              },
+              {
+                "name": "季度账户收益.csv",
+                "path": "季度账户收益.csv"
+              },
+              {
+                "name": "年度账户收益.csv",
+                "path": "年度账户收益.csv"
+              },
+              {
+                "name": "月度账户收益.csv",
+                "path": "月度账户收益.csv"
+              }
+            ],
+            "config_files": [
+              {
+                "name": "config.csv",
+                "path": "config.csv",
+                "type": "strategy_config"
+              }
+            ]
+          }
+        },
+        {
+          "id": "s6",
+          "name": "S6-纯多",
+          "type": "sub",
+          "parent_id": "main_strategy_20250905_235957",
+          "timestamp": "20250905_235957",
+          "data_path": "backtests/20250905_235957/子策略回测结果/config_超混合策略精心随机v1_2000u版_正常_210101_250903/S6-纯多",
+          "metrics": {
+            "total_return": 215.25,
+            "max_drawdown": -69.38,
+            "sharpe_ratio": 3.1,
+            "weight": 0.175
+          },
+          "files": {
+            "html_files": [
+              {
+                "name": "资金曲线_轻量版.html",
+                "path": "资金曲线_轻量版.html",
+                "category": "fund_curve"
+              }
+            ],
+            "csv_files": [
+              {
+                "name": "策略评价.csv",
+                "path": "策略评价.csv"
+              },
+              {
+                "name": "季度账户收益.csv",
+                "path": "季度账户收益.csv"
+              },
+              {
+                "name": "年度账户收益.csv",
+                "path": "年度账户收益.csv"
+              },
+              {
+                "name": "月度账户收益.csv",
+                "path": "月度账户收益.csv"
+              }
+            ],
+            "config_files": [
+              {
+                "name": "config.csv",
+                "path": "config.csv",
+                "type": "strategy_config"
+              }
+            ]
+          }
+        }
+      ],
+      "archive": {
+        "filename": "backtest_20250905_235957.tar.gz",
+        "path": "temp/backtest_20250905_235957.tar.gz",
+        "size": 64952070
+      }
+    }
+  ],
+  "last_updated": "2025-09-06T00:00:35.403242Z"
 }
